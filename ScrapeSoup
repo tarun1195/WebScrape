@@ -1,0 +1,87 @@
+from bs4 import BeautifulSoup
+import requests
+
+def parser(link):
+    """
+    This function takes the URL of the wikipedia page and returns the list of all paragraphs
+    """
+    source = requests.get(link).text
+    soup =  BeautifulSoup(source,'lxml')
+    content = soup.find("div", id = "mw-content-text")
+    plist = [para.text for para in content.find_all("p") if not para.text == "\n"]
+    return plist
+####################################################################################
+
+def printPara(list1,list2):
+    """
+    This function takes two lists and prints paragraphs picking alternatively
+    """
+    for x,y in zip(list1,list2):
+        print(x)
+        print(y)
+
+#####################################################################################
+
+cric = ("Virat_Kohli","Steve_Smith","Sachin_Tendulkar","Kane_Williamson","Joe_Root","Ab_Devilliers","Babar_Azam")
+pol = ("Morarji_Desai","Rajiv_Gandhi","Narendra_Modi","Manmohan_Singh","Atal_Vajpayee")
+
+def paraString(Items):
+    """
+    Takes in tuple of items and gives a string of paragraphs
+    
+    """
+    
+    string = []
+    for item in Items:
+        string = parser("https://en.wikipedia.org/wiki/" + item) + string
+    string = "\n".join(string)
+    return string
+
+######################################################################################    
+
+cricket = paraString(cric)
+pm      = paraString(pol)
+
+def writeTo(content,filename):
+    
+    """
+    Takes in content of string, writes to a file
+    """
+    
+    with open(filename,"w",encoding='UTF-8') as f:
+        f.write(content)
+
+######################################################################################
+
+writeTo(cricket,"cricket.txt")
+writeTo(pm,"pm.txt")
+
+def interleave(f1,f2,cf):
+    """
+    Takes two files as input, creates a composite file, and returns the interleaved file
+    """
+    #Creating the composite file
+    comf = open(cf,"w")
+    comf.close()
+    with open(f1,"r",encoding='UTF-8') as file1, open(f2,"r",encoding='UTF-8') as file2,open(cf,"a",encoding='UTF-8') as cfile:
+        for p1,p2 in zip(file1.readlines(),file2.readlines()):
+            cfile.write(p1)
+            cfile.write("\n")
+            cfile.write(p2)
+        return cfile 
+#######################################################################################
+
+interleave("cricket.txt","pm.txt","composite.txt")
+
+#Converting the text file to ref format
+
+filenames = ['composite.txt']
+with open('finalref.ref',"w",encoding='UTF-8') as outfile:
+    for fname in filenames:
+        with open(fname,encoding='UTF-8') as infile:
+            outfile.write("==========\n")
+            for line in infile:
+                outfile.write(line)
+                outfile.write('\n')
+                outfile.write("==========\n")
+            outfile.write('\n')
